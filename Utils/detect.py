@@ -62,6 +62,10 @@ def draw_outputs(input_img_path, outputs, class_names):
     for i in range(1):
         x1y1 = tuple((np.array(boxes[i][0:2]) * wh).astype(np.int32))
         x2y2 = tuple((np.array(boxes[i][2:4]) * wh).astype(np.int32))
+        if x2y2[0] <= 0 or x2y2[1] <= 0:
+            img = cv2.putText(img, "No Polyp".format(objectness[i]),
+                              (20, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 2)
+            return img
         img = cv2.rectangle(img, x1y1, x2y2, (255, 0, 0), 2)
         img = cv2.putText(img, '{} {:.4f}'.format(
             class_names[int(classes[i])], objectness[i]),
@@ -122,7 +126,7 @@ def save_output(input_img_path, predictions, output_img_path):
 
 if __name__=="__main__":
     checkpoint_dir = "../results/model-400"
-    image_path = "../data/PolypImages_valid/.jpg"
+    image_path = "../data/clean2.jpg"
     image, img_rgb = get_single_image(image_path=image_path)
     predictions = get_prediction(checkpoint_dir, img_rgb)
     class_names = ["Polyp"]
