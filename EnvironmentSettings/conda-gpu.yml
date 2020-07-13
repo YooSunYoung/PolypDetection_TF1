@@ -1,4 +1,4 @@
-name: polyp_tf1
+name: polyp-tf1-gpu
 channels:
   - defaults
 dependencies:
