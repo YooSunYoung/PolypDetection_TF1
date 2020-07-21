@@ -126,7 +126,7 @@ def save_output(input_img_path, predictions, output_img_path):
 
 if __name__=="__main__":
     checkpoint_dir = "../results/model-400"
-    image_path = "../data/clean2.jpg"
+    image_path = "../data/028.jpg"
     image, img_rgb = get_single_image(image_path=image_path)
     predictions = get_prediction(checkpoint_dir, img_rgb)
     class_names = ["Polyp"]

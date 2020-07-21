@@ -1,4 +1,4 @@
-name: polyp-tf1-gpu
+name: polyp_tf1
 channels:
   - defaults
 dependencies:
@@ -89,4 +89,20 @@ dependencies:
   - xz=5.2.5=h7b6447c_0
   - zlib=1.2.11=h7b6447c_3
   - zstd=1.4.4=h0b5b093_3
+  - pip:
+    - cycler==0.10.0
+    - decorator==4.4.2
+    - imageio==2.9.0
+    - imgaug==0.4.0
+    - kiwisolver==1.2.0
+    - matplotlib==3.3.0
+    - networkx==2.4
+    - opencv-python==4.3.0.36
+    - pillow==7.2.0
+    - pyparsing==2.4.7
+    - pywavelets==1.1.1
+    - scikit-image==0.17.2
+    - shapely==1.7.0
+    - tifffile==2020.7.17
+prefix: /home/syo/anaconda3/envs/polyp_tf1
 
