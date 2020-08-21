@@ -92,18 +92,19 @@ All the images should have the same size.
 
 ```bash
 python Training/train.py \
-                        --dataset ./data/polyp_train.tfrecord \
-                        --val_dataset ./data/polyp_valid.tfrecord \
+                        --dataset ./data/PolypImages_aug \
+                        --val_dataset ./data/PolypImages_valid \
                         --classes ./data/polyp.names \
                         --checkpoint_dir_path ./results/checkpoints \
                         --log_dir_path ./results/log \
-                        --epochs 1000 \
-                        --save_points 50 \
-                        --batch_size 1 \
+                        --epochs 500 \
+                        --save_points 100 \
+                        --batch_size 2 \
                         --learning_rate 1e-3 
 ```
 
 Default settings are in the `Training/training_recipy.py`
+You can change the default setting by editting `Training/training_recipy.py`
 
 ### Evaluation
 
