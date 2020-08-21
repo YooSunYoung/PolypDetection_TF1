@@ -32,7 +32,7 @@ def MaxPooling(name, x, shape=3, stride=None, padding='VALID', data_format="chan
     return tf.identity(ret, name=name)
 
 
-def halffire(name, x, num_squeeze_filters=12, num_expand_3x3_filters=12, skip=0):
+def halffire(name, x, num_squeeze_filters=24, num_expand_3x3_filters=24, skip=0):
     out_squeeze = Conv2D('squeeze_conv_'+name, x, out_channel=num_squeeze_filters, kernel_shape=1, stride=1, padding='SAME')
     out_expand_3X3 = Conv2D('expand_3x3_conv_'+name, out_squeeze, out_channel=num_expand_3x3_filters, kernel_shape=3, stride=1, padding='SAME')
     out_expand_3X3 = tf.nn.relu(out_expand_3X3)
@@ -66,8 +66,8 @@ def compute_iou(boxes1, boxes2):
                          boxes2[..., 0] + boxes2[..., 2] / 2.0,
                          boxes2[..., 1] + boxes2[..., 3] / 2.0],
                         axis=-1)
-    lu = tf.maximum(tf.cast(boxes1_t[..., :2],dtype=tf.float32), tf.cast(boxes2_t[..., :2],dtype=tf.float32))
-    rd = tf.minimum(tf.cast(boxes1_t[..., 2:],dtype=tf.float32), tf.cast(boxes2_t[..., 2:],dtype=tf.float32))
+    lu = tf.maximum(tf.cast(boxes1_t[..., :2], dtype=tf.float32), tf.cast(boxes2_t[..., :2], dtype=tf.float32))
+    rd = tf.minimum(tf.cast(boxes1_t[..., 2:], dtype=tf.float32), tf.cast(boxes2_t[..., 2:], dtype=tf.float32))
 
     intersection = tf.maximum(0.0, rd - lu)
     inter_square = intersection[..., 0] * intersection[..., 1]

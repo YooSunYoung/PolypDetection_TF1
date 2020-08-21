@@ -101,6 +101,7 @@ def save_output(input_img_path, predictions, output_img_path):
     c_y = bndboxes[0, max_h, max_w, max_b, 1] * grid_size + grid_size*max_h
     t_w = bndboxes[0, max_h, max_w, max_b, 2] * grid_size
     t_h = bndboxes[0, max_h, max_w, max_b, 3] * grid_size
+
     c_x_scale = int(c_x)
     c_y_scale = int(c_y)
     bndbox2['xmin'] = int(c_x - t_w / 2.0)
@@ -125,12 +126,15 @@ def save_output(input_img_path, predictions, output_img_path):
 
 
 if __name__=="__main__":
-    checkpoint_dir = "../results/model-400"
-    image_path = "../data/028.jpg"
+    checkpoint_dir = "../results/valid/model-300"
+    #image_path = "../data/PolypImage_single/028.jpg"
+    image_path = "../data/PolypImages_valid/171.jpg"
     image, img_rgb = get_single_image(image_path=image_path)
     predictions = get_prediction(checkpoint_dir, img_rgb)
     class_names = ["Polyp"]
+    #np.save("DNNOutput_PC", predictions)
     boxes, scores, classes, nums = predictions
+
     logging.info('detections:')
     for i in range(nums[0]):
         logging.info('\t{}, {}, {}'.format(class_names[int(classes[0][i])],
