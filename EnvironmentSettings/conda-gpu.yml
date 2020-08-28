@@ -1,4 +1,4 @@
-name: polyp_tf1
+name: polyp_tf1_gpu
 channels:
   - defaults
 dependencies:
@@ -104,5 +104,5 @@ dependencies:
     - scikit-image==0.17.2
     - shapely==1.7.0
     - tifffile==2020.7.17
-prefix: /home/syo/anaconda3/envs/polyp_tf1
+prefix: /home/syo/anaconda3/envs/polyp_tf1_gpu
 
