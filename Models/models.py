@@ -1,6 +1,4 @@
-from Models.dataset import PolypDataset as polyp_dataset
 import tensorflow as tf
-from tensorflow.nn import conv2d
 from tensorflow_core.python.eager.wrap_function import VariableHolder
 import tensorflow.keras.backend as K
 
@@ -80,15 +78,10 @@ def compute_iou(boxes1, boxes2):
 
 
 class PolypDetectionModel:
-    def __init__(self, data_path=None, training=True):
-        self.data_path = data_path
-        self.dataset = polyp_dataset(data_path=self.data_path)
+    def __init__(self, training=True):
         self.training = training
         self.n_grid = 4
         self.n_boxes = 3
-
-    def get_dataset(self):
-        return self.dataset.load_train_data()
 
     def first_layer(self, x):
         l = Conv2D("First", x, out_channel=16, kernel_shape=3, stride=1, padding="SAME")
@@ -186,7 +179,12 @@ class PolypDetectionModel:
             tf.reduce_sum(tf.square(predictor_mask_none * (target_box_offset_coord - pred_box_offset_coord)),
                           axis=[1, 2, 3]))
 
-        loss = 10 * loc_loss + 2 * obj_loss + 0.5 * noobj_loss
+        point_loss = tf.reduce_mean(tf.reduce_sum(tf.square(predictor_mask_none * (target_box_offset_coord[:,:,:,:, 1:3] - pred_box_offset_coord[:,:,:,:, 1:3]))))
+        size_loss = tf.reduce_mean(
+            tf.reduce_sum(tf.square(predictor_mask_none * (target_box_offset_coord[:,:,:,:, 3:] - pred_box_offset_coord[:,:,:,:, 3:]))))
+
+        loc_loss = 10 * point_loss + 13 * size_loss
+        loss = loc_loss + 2 * obj_loss + 0.5 * noobj_loss
 
         if train_state is True:
             tf.summary.scalar("loc_loss", K.sum(10 * loc_loss))

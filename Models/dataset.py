@@ -28,10 +28,11 @@ def transform_targets(y_true):
 
 
 class PolypDataset:
-    def __init__(self, data_path="../data/"):
+    def __init__(self, data_path="../data/", valid_data_path="../data/"):
         self.data_path = data_path
+        self.valid_data_path = valid_data_path
 
-    def load_train_data(self, data_path=None):
+    def load_data(self, data_path=None):
         if data_path is None: data_path = self.data_path
         logging.log(logging.INFO, "Scraping dataset from {}".format(data_path))
         images = []
@@ -76,4 +77,23 @@ class PolypDataset:
             labels.append(y_true)
         return np.array(norm_images), np.array(labels)
 
+    def load_train_data(self, data_path=None):
+        if data_path is None:
+            data_path = self.data_path
+            logging.log(logging.INFO, "Training dataset from directory {}".format(data_path))
+        else:
+            if data_path is not self.data_path:
+                self.data_path = data_path
+                logging.log(logging.INFO, "Training dataset from directory {}".format(data_path))
+        return self.load_data(self.data_path)
+
+    def load_valid_data(self, data_path=None):
+        if data_path is None:
+            data_path = self.valid_data_path
+            logging.log(logging.INFO, "Validation dataset from directory {}".format(data_path))
+        else:
+            if data_path is not self.valid_data_path:
+                self.valid_data_path = data_path
+                logging.log(logging.INFO, "Validation dataset from directory {}".format(data_path))
+        return self.load_data(data_path)
 
