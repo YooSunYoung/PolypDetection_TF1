@@ -26,7 +26,7 @@ class Trainer:
         self.model = PolypDetectionModel()
 
     def train(self):
-        train_size = len(self.train_dataset)
+        train_size = len(self.train_dataset[0])
         with tf.device(self.device):
             with tf.Graph().as_default():
                 X = tf.placeholder(tf.float32, [None, 227, 227, 3], name="imGRBNormalize")
@@ -40,7 +40,7 @@ class Trainer:
                 labels = self.train_dataset[1]
                 init = tf.global_variables_initializer()
                 saver = tf.train.Saver()
-                batch_size = FLAGS.batch_size
+                batch_size = FLAGS.batch_size if train_size > FLAGS.batch_size else 1
                 val_batch_size = FLAGS.val_batch_size
                 with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
                     writer = tf.summary.FileWriter("../summary/", sess.graph)
@@ -48,9 +48,12 @@ class Trainer:
                     cur_loss = 0
                     for i in range(1, self.epoch + 1):
                         for b_num in range(int(len(images) / batch_size)):
-                            offset = (b_num * batch_size) % (train_size - 1) if train_size > 1 else 0
-                            batch_x, batch_y = images[offset:(offset + batch_size)], labels[
+                            offset = b_num * batch_size
+                            if offset + batch_size < train_size:
+                                batch_x, batch_y = images[offset:(offset + batch_size)], labels[
                                                                                      offset:(offset + batch_size)]
+                            else:
+                                batch_x, batch_y = images[offset:], labels[offset:]
                             _, cur_loss, summary = sess.run([train_op, loss, summary_op],
                                                             feed_dict={X: batch_x, Y: batch_y})
                         print("testing loss : ", i, cur_loss)
