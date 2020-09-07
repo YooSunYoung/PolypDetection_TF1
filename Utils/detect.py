@@ -4,8 +4,7 @@ import numpy as np
 import tensorflow as tf
 from Models.models import PolypDetectionModel
 import logging
-from Models.dataset import PolypDataset
-from Models.models import GenerateGrid
+import xml.etree.ElementTree
 
 
 def get_single_image(image_path):
@@ -51,11 +50,23 @@ def get_prediction(checkpoint_path, images):
     return predictions
 
 
-def draw_outputs(img, outputs, class_names, label, color):
-    #img = cv2.imread(input_img_path, cv2.IMREAD_COLOR)
+def extend_image(img, width=500, height=500, color=(0, 0, 0)):
+    original_height, original_width, channel = img.shape
+    extended = np.full((width, height, channel), color, dtype=np.uint8)
+    center_offset_x, center_offset_y = int((width - original_width) // 2), int((height - original_height) // 2)
+    extended[center_offset_y:center_offset_y+original_height, center_offset_x:center_offset_x+original_width] = img
+    return extended
+
+
+def draw_outputs(img, outputs, class_names, label, color, extended_image_width=400, extended_image_height=400,
+                 original_image_width=227, original_image_height=227):
+    offsets = tuple([int((extended_image_width - original_image_width) / 2),
+                     int((extended_image_height - original_image_height) / 2)])
+    if extended_image_width > img.shape[0] and extended_image_height > img.shape[1]:
+        img = extend_image(img, extended_image_width, extended_image_height)
     boxes, objectness, classes, nums = outputs
     boxes, objectness, classes, nums = boxes[0], objectness[0], classes[0], nums[0]
-    wh = np.flip(img.shape[0:2])
+    wh = np.flip([original_image_width, original_image_height])
     for i in range(1):
         x1y1 = tuple((np.array(boxes[i][0:2]) * wh).astype(np.int32))
         x2y2 = tuple((np.array(boxes[i][2:4]) * wh).astype(np.int32))
@@ -63,6 +74,8 @@ def draw_outputs(img, outputs, class_names, label, color):
             img = cv2.putText(img, "No Polyp, {}".format(label),
                               (20, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, color, 2)
             return img
+        x1y1 = tuple([a + b for a, b in zip(offsets, x1y1)])
+        x2y2 = tuple([a + b for a, b in zip(offsets, x2y2)])
         img = cv2.rectangle(img, x1y1, x2y2, color, 2)
         img = cv2.putText(img, '{} {:.4f}'.format(
             class_names[int(classes[i])], objectness[i]),
@@ -72,56 +85,19 @@ def draw_outputs(img, outputs, class_names, label, color):
     return img
 
 
-def save_output(input_img_path, predictions, output_img_path):
-    boxes, scores, classes, nums = predictions
-
-    #objdetect = predictions[:, :, :, :, 0]
-    #bndboxes = predictions[:, :, :, :, 1:]
-    objdetect = predictions[1]
-    bndboxes = predictions[0]
-
-    max_pred = -100
-    max_h = -1
-    max_w = -1
-    max_b = -1
-    for h in range(0, objdetect.shape[1]):
-        for w in range(0, objdetect.shape[2]):
-            print(str(objdetect[0, h, w]))
-            for b, pred in enumerate(objdetect[0, h, w]):
-                if pred > max_pred:
-                    max_pred = pred
-                    max_h = h
-                    max_w = w
-                    max_b = b
-
-    bndbox2 = {}
-    grid_size = 67.5
-    c_x = bndboxes[0, max_h, max_w, max_b, 0] * grid_size + grid_size*max_w
-    c_y = bndboxes[0, max_h, max_w, max_b, 1] * grid_size + grid_size*max_h
-    t_w = bndboxes[0, max_h, max_w, max_b, 2] * grid_size
-    t_h = bndboxes[0, max_h, max_w, max_b, 3] * grid_size
-
-    c_x_scale = int(c_x)
-    c_y_scale = int(c_y)
-    bndbox2['xmin'] = int(c_x - t_w / 2.0)
-    bndbox2['xmax'] = int(c_x + t_w / 2.0)
-    bndbox2['ymin'] = int(c_y - t_h / 2.0)
-    bndbox2['ymax'] = int(c_y + t_h / 2.0)
-
-    im = cv2.imread(input_img_path, cv2.IMREAD_COLOR)
-    x1y1 = (bndbox2['xmin'], bndbox2['ymin'])
-    x2y2 = (bndbox2['xmax'], bndbox2['ymax'])
-    cv2.rectangle(im, x1y1, x2y2, (0, 255, 0), 2)
-    im = cv2.putText(im, '{} {:.4f}'.format(
-        "Polyp", max_pred),
-                     x1y1, cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 2)
-    cv2.imwrite(output_img_path, im)
-
-    print('max_h: ' + str(max_h))
-    print('max_w: ' + str(max_w))
-    print('objdetect.shape: ' + str(objdetect.shape))
-    print('bndboxes: ' + str(bndboxes[0, max_h, max_w]))
-    print('bndbox2: ' + str([bndbox2['xmin'], bndbox2['ymin'], bndbox2['xmax'], bndbox2['ymax']]))
+def get_ground_truth(xml_path):
+    meta = xml.etree.ElementTree.parse(xml_path).getroot()
+    x1y1, x2y2 = np.zeros(2, dtype=int), np.zeros(2, dtype=int)
+    if meta is not None:
+        obj = meta.find('object')
+        if obj is not None:
+            box = obj.find('bndbox')
+            if box is not None:
+                x1y1[0] = int(box.find('xmin').text.split('.')[0])
+                x1y1[1] = int(box.find('ymin').text.split('.')[0])
+                x2y2[0] = int(box.find('xmax').text.split('.')[0])
+                x2y2[1] = int(box.find('ymax').text.split('.')[0])
+    return tuple(x1y1), tuple(x2y2)
 
 
 def mkdir(directory_path, i=0):
@@ -145,7 +121,8 @@ def mkdir(directory_path, i=0):
 
 if __name__=="__main__":
     multiple_checkpoints = 1
-    multiple_images = 0
+    multiple_images = 1
+    ground_truth = 1
     checkpoint_paths = []
     image_paths = []
     if not multiple_checkpoints:
@@ -153,14 +130,14 @@ if __name__=="__main__":
         checkpoint_paths.append(checkpoint_path)
     else:
         checkpoint_dir = "../results/checkpoints/"
-        checkpoint_files = ["model-100", "model-200", "model-300", "model-400", "model-500"]
+        checkpoint_files = ["model-100", "model-200", "model-300", "model-500"]
         checkpoint_paths = [os.path.join(checkpoint_dir, file) for file in checkpoint_files]
 
     if not multiple_images:
         image_path = "../data/PolypImages_valid/206.jpg"
         image_paths.append(image_path)
     else:
-        image_dir = "../data/PolypImages_valid/"
+        image_dir = "../data/PolypImages_train/"
         image_files = os.listdir(image_dir)
         image_files = [x for x in image_files if x.endswith(".jpg")]
         image_paths = [os.path.join(image_dir, file) for file in image_files]
@@ -173,6 +150,10 @@ if __name__=="__main__":
     for image_path in image_paths:
         file_name = image_path.split("/")[-1]
         image, img_rgb = get_single_image(image_path=image_path)
+        if ground_truth:
+            x1y1, x2y2 = get_ground_truth(image_path.replace(".jpg",".xml"))
+            image = cv2.rectangle(image, x1y1, x2y2, (0, 0, 255), 4)
+            image = cv2.putText(image, "Ground Truth", x1y1, cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 4)
         images.append([image, img_rgb, file_name])
 
     predictions = []
@@ -193,4 +174,3 @@ if __name__=="__main__":
             image = draw_outputs(image, outputs=prediction, class_names=class_names,
                                  label=label, color=color_list[ich])
         cv2.imwrite(os.path.join(result_directory, "output_"+file_name), image)
-        # save_output("../data/028.jpg", predictions, "output.jpg")
