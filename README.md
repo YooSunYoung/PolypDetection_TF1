@@ -74,10 +74,35 @@ It would be easier to put all the data in one directory. For example,
 
 ### Data Pre-processing
 #### 1. Split data into Train/Valid/Test set
+Here is how to use `Utils/split_dataset.py` to split dataset randomly into `training`, `validation` and `test` sets.
+Before you split the dataset all the dataset including images and the label files(usually .xml files) should be in one directory.
+It doesn't remove the files in the `data_dir` but copy them in to other directories. 
+
+- --data_dir : path to the directory which has all the dataset
+- --output_dir_prefix : output files will be copied into `${output_dir_prefix}_train`, `${output_dir_prefix}_valid` and `${output_dir_prefix}_test`directory.                    
+- --fraction : proportional expression for the number of train, valid and test images.
+```bash
+python Utils/split_dataset.py \
+                        --data_dir ./data/PolypImages \
+                        --output_dir_prefix ./data/PolypImages \
+                        --fraction 5:3:2
+```
+> For example, if you execute the command line above, 
+> and you have 10 images and labels in the `./data/PolypImages` directory,
+> you will have 5 files in the `./data/PolypImages_train` directory,
+> 3 files in the `./data/PolypImages_valid` directory and
+> 2 files in the `./data/PolypImages_test` directory as a result.
 
 #### 2. Image Augmentation
 As the lack of polyp images we did image augmentation for the training dataset.
 All the images should have the same size.
+
+first, you need to install `imgaug` module with conda.
+
+```bash
+conda config --add channels conda-forge
+conda install imgaug
+```
 
 ### Models
 <!-- description for the models needed-->
