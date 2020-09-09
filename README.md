@@ -97,6 +97,13 @@ python Utils/split_dataset.py \
 As the lack of polyp images we did image augmentation for the training dataset.
 All the images should have the same size.
 
+first, you need to install `imgaug` module with conda.
+
+```bash
+conda config --add channels conda-forge
+conda install imgaug
+```
+
 ### Models
 <!-- description for the models needed-->
 - `Models/config.py` contains the information as a dictionary variable `configuration`.
