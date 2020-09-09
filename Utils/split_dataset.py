@@ -7,7 +7,7 @@ from Utils.common_functions import make_and_clean_dir
 
 flags.DEFINE_string('data_dir', "../data/PolypImages",
                     'path to Polyps data set for training, validation and test')
-flags.DEFINE_string('output_dir_prefix', '../data/PolypImages_', 'prefix of the path for output directories')
+flags.DEFINE_string('output_dir_prefix', '../data/PolypImages', 'prefix of the path for output directories')
 flags.DEFINE_string('fraction', '694:0:70', 'fraction as train:valid:test')
 
 
