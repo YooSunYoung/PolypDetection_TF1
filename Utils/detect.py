@@ -120,13 +120,13 @@ def mkdir(directory_path, i=0):
 
 
 if __name__=="__main__":
-    multiple_checkpoints = 1
+    multiple_checkpoints = 0
     multiple_images = 1
     ground_truth = 1
     checkpoint_paths = []
     image_paths = []
     if not multiple_checkpoints:
-        checkpoint_path = "../results/checkpoints/model-300"
+        checkpoint_path = "../results/checkpoints/model-400"
         checkpoint_paths.append(checkpoint_path)
     else:
         checkpoint_dir = "../results/checkpoints/"
@@ -138,6 +138,7 @@ if __name__=="__main__":
         image_paths.append(image_path)
     else:
         image_dir = "../data/PolypImages_train/"
+        #image_dir = "../data/NoPolypImages/"
         image_files = os.listdir(image_dir)
         image_files = [x for x in image_files if x.endswith(".jpg")]
         image_paths = [os.path.join(image_dir, file) for file in image_files]
