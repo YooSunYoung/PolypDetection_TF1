@@ -4,8 +4,8 @@ from Models.models import PolypDetectionModel
 from Utils.detect import get_single_image
 
 p = PolypDetectionModel()
-image = get_single_image("../data/PolypImage_single/028.jpg")
-checkpoint_path = "../results/valid/model-300"
+image = get_single_image("../data/SimpleDataSet/028.jpg")
+checkpoint_path = "../results/36_36_6_checkpoints/model-700"
 with tf.Graph().as_default():
     X = tf.placeholder(tf.float32, [None, 227, 227, 3], name="imGRBNormalize")
     output_0 = p.get_model(X, training=False)

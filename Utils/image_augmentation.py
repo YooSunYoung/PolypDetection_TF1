@@ -9,7 +9,7 @@ from absl.flags import FLAGS
 from Utils.common_functions import make_and_clean_dir
 ia.seed(1)
 
-flags.DEFINE_string('data_train_dir', '../data/PolypImages_train/', 'path to the all images')
+flags.DEFINE_string('data_train_dir', '../data/PolypImages/', 'path to the all images')
 flags.DEFINE_string('output_dir', '../data/PolypImages_aug/', 'path to output images')
 
 
@@ -117,7 +117,7 @@ def data_augmentation(data_train_path, output_dir):
         iaa.Flipud(0.5)
     ], random_order=True)
 
-    for step in range(20):  # This number should be adjusted
+    for step in range(9):  # This number should be adjusted
         print("Run epoch {}".format(step))
         image_aug, bbs_aug = seq(images=images, bounding_boxes=bounding_boxes)
         save_image_and_boundbox(directory_path=output_dir, file_prefix="epoch{}".format(step),

@@ -30,7 +30,7 @@ def MaxPooling(name, x, shape=3, stride=None, padding='VALID', data_format="chan
     return tf.identity(ret, name=name)
 
 
-def halffire(name, x, num_squeeze_filters=24, num_expand_3x3_filters=24, skip=0):
+def halffire(name, x, num_squeeze_filters=48, num_expand_3x3_filters=48, skip=0):
     out_squeeze = Conv2D('squeeze_conv_'+name, x, out_channel=num_squeeze_filters, kernel_shape=1, stride=1, padding='SAME')
     out_expand_3X3 = Conv2D('expand_3x3_conv_'+name, out_squeeze, out_channel=num_expand_3x3_filters, kernel_shape=3, stride=1, padding='SAME')
     out_expand_3X3 = tf.nn.relu(out_expand_3X3)
@@ -110,7 +110,7 @@ class PolypDetectionModel:
         boxes, scores, classes, valid_detections = tf.image.combined_non_max_suppression(
             boxes=bbox,
             scores=confidence,
-            max_output_size_per_class=100,
+            max_output_size_per_class=10,
             max_total_size=100,
             iou_threshold=0.5,
             score_threshold=0.5
@@ -132,13 +132,27 @@ class PolypDetectionModel:
         l = halffire('hafflire5', l)
         l = MaxPooling('pool5', l, shape=3, stride=2, padding='SAME')
         l = halffire('hafflire6', l)
+#        l = MaxPooling('pool7', l, shape=3, stride=2, padding='SAME')
         l = halffire('hafflire7', l)
+#        l = MaxPooling('pool8', l, shape=3, stride=2, padding='SAME')
+#        l = halffire('hafflire8', l)
+#        l = MaxPooling('pool9', l, shape=3, stride=2, padding='SAME')
+#        l = halffire('hafflire9', l)
+#        l = MaxPooling('pool10', l, shape=3, stride=2, padding='SAME')
+#        l = halffire('hafflire10', l)
+#        l = MaxPooling('pool11', l, shape=3, stride=2, padding='SAME')
+#        l = halffire('hafflire11', l)
+#        l = MaxPooling('pool12', l, shape=3, stride=2, padding='SAME')
+#        l = halffire('hafflire12', l)
+#        l = halffire('hafflire13', l)
         output_0 = Conv2D('output', l, out_channel=3 * 5, kernel_shape=1, stride=1, padding='SAME')
         output_0 = tf.reshape(output_0, shape=(-1, 4, 4, 3, 5), name="FinalOutput")
+        #output_0 = monitor(output_0, "output0")
         if training is False:
             output_0 = self.reshape_output(output_0)
             output_0 = self.reshape_output_for_prediction(output_0)
             return output_0
+
         return output_0
 
     def get_loss(self, y_true=None, y_pred=None, train_state=True, grid_size=4, n_boxes=3):
@@ -192,3 +206,11 @@ class PolypDetectionModel:
             tf.summary.scalar("nonObj_loss", K.sum(0.5 * noobj_loss))
             # print("loss is:{}".format(loss))
         return loss
+
+if __name__=="__main__":
+    model = PolypDetectionModel(training=True)
+    X = tf.placeholder(tf.float32, [None, 227, 227, 3], name="imGRBNormalize")
+    output = model.get_model(X)
+    import numpy as np
+    num_trainable_variable = np.sum([np.prod(v.get_shape().as_list()) for v in tf.trainable_variables()])
+    print(num_trainable_variable)

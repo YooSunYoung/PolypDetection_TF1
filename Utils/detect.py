@@ -1,5 +1,6 @@
 import os
 import cv2
+import time
 import numpy as np
 import tensorflow as tf
 from Models.models import PolypDetectionModel
@@ -45,8 +46,12 @@ def get_prediction(checkpoint_path, images):
             sess.run(init)
             saver.restore(sess, checkpoint_path)
             for image, image_rgb, file_name in images:
+                time1 = time.time()
                 prediction = sess.run(output_0, feed_dict={X: image_rgb})
+                time2 = time.time()
                 predictions.append(prediction)
+                total_time = time2 - time1
+    print("total_time: %.2f" % total_time)
     return predictions
 
 
@@ -121,12 +126,12 @@ def mkdir(directory_path, i=0):
 
 if __name__=="__main__":
     multiple_checkpoints = 0
-    multiple_images = 1
-    ground_truth = 1
+    multiple_images = 0
+    ground_truth = 0
     checkpoint_paths = []
     image_paths = []
     if not multiple_checkpoints:
-        checkpoint_path = "../results/checkpoints/model-400"
+        checkpoint_path = "../results/36_36_6_checkpoints/model-700"
         checkpoint_paths.append(checkpoint_path)
     else:
         checkpoint_dir = "../results/checkpoints/"
@@ -134,11 +139,11 @@ if __name__=="__main__":
         checkpoint_paths = [os.path.join(checkpoint_dir, file) for file in checkpoint_files]
 
     if not multiple_images:
-        image_path = "../data/PolypImages_valid/206.jpg"
+        image_path = "../data/PolypImages_train/028.jpg"
         image_paths.append(image_path)
     else:
-        image_dir = "../data/PolypImages_train/"
-        #image_dir = "../data/NoPolypImages/"
+        #image_dir = "../data/PolypImages_train/"
+        image_dir = "../data/PolypImages_test"
         image_files = os.listdir(image_dir)
         image_files = [x for x in image_files if x.endswith(".jpg")]
         image_paths = [os.path.join(image_dir, file) for file in image_files]
@@ -167,6 +172,7 @@ if __name__=="__main__":
             prediction = predictions[ich][iimage]
             # np.save("DNNOutput_PC", predictions)
             boxes, scores, classes, nums = prediction
+            if scores[0][0] >= 2.5: print(file_name)
             logging.info('Image {} detections: '.format(file_name))
             for i in range(nums[0]):
                 logging.info('\t{}, {}, {}'.format(class_names[int(classes[0][i])],

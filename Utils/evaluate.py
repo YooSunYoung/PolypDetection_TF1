@@ -8,6 +8,9 @@ import xml.etree.ElementTree
 from absl import app, flags, logging
 from absl.flags import FLAGS
 
+import matplotlib.pyplot as plt
+import pandas as pd
+
 
 def iou(box1, box2):
     '''
@@ -124,7 +127,9 @@ def get_image_file_paths(dir):
 
 
 def main(_agrs):
-    checkpoint_path = "../results/checkpoints/model-400"
+    checkpoint_path = "../results/48_48_6_checkpoints/model-600"
+    #polyp_image_dir = "../data/PolypImages_train/"
+    #polyp_image_dir = "../data/SimpleDataSet/"
     polyp_image_dir = "../data/PolypImages_test/"
     no_polyp_image_dir = "../data/WithoutPolypImages/"
 
@@ -147,7 +152,7 @@ def main(_agrs):
         #image = cv2.putText(image, "Ground Truth", x1y1, cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 4)
 
     no_polyp_images_dict = {}
-    for image_path in no_polyp_image_paths:
+    for image_path in no_polyp_image_paths[:0]:
         properties = {}
         file_name = image_path.split("/")[-1]
         image, img_rgb = get_single_image(image_path=image_path)
@@ -185,7 +190,7 @@ def main(_agrs):
                 no_polyp_images_dict[image]["score"] = objectness[0][0]
 
     #The AP is calcluated in this part
-    iouThreshold=0.5    # this parameter is important and is set to be 0.5 now
+    iouThreshold=0.4    # this parameter is important and is set to be 0.5 now
     previousRecall = 0.0
     previousPrecision = 1.0
     recall = 0.0
@@ -213,18 +218,19 @@ def main(_agrs):
         bndbox = no_polyp_images_dict[image]["bndbox"]
         if bndbox is None:
             default_TN += 1
-
+    print("default true negative : {}".format(default_TN))
     for scoreThreshold in np.arange(0.98, -0.1, -0.1):  #score is actually the object probability.
         TN = default_TN  #True negative
         FP = 0  #False positive
         for image in no_polyp_images_dict.keys():
             bndbox = no_polyp_images_dict[image]["bndbox"]
-            if bndbox is None: pass
+            #if bndbox is None: pass
             score = no_polyp_images_dict[image]["score"]
-            if score < scoreThreshold:
+            if score < scoreThreshold or score > 1.5:
                 TN = TN + 1
             else:
                 FP = FP + 1
+        print("from_non_polyp_images : {}".format(TN))
         TP = 0  #True positive
         FN = 0  #False negative
         for image in polyp_images_dict.keys():
@@ -262,7 +268,11 @@ def main(_agrs):
         recall = recallList[i]
         f.write("{:.3f},{:.3f}\n".format(precision, recall))
     f.close()
-
+    precision_recall_df = pd.DataFrame({'precision':precisionList, 'recall':recallList})
+    precision_recall_df.plot(kind='line', x='recall', y='precision')
+    plt.ylabel("Precision", fontsize=20)
+    plt.xlabel("Recall", fontsize=20)
+    plt.show()
 
 if __name__ == '__main__':
     try:

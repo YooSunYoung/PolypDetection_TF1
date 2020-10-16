@@ -27,6 +27,7 @@ class Trainer:
 
     def train(self):
         train_size = len(self.train_dataset[0])
+        batch_x, batch_y = None, None
         with tf.device(self.device):
             with tf.Graph().as_default():
                 X = tf.placeholder(tf.float32, [None, 227, 227, 3], name="imGRBNormalize")
@@ -47,7 +48,8 @@ class Trainer:
                     sess.run(init)
                     cur_loss = 0
                     for i in range(1, self.epoch + 1):
-                        for b_num in range(int(len(images) / batch_size)):
+                        batch_epoch_size = int(len(images) / batch_size)
+                        for b_num in range(batch_epoch_size):
                             offset = b_num * batch_size
                             if offset + batch_size < train_size:
                                 batch_x, batch_y = images[offset:(offset + batch_size)], labels[

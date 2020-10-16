@@ -5,10 +5,10 @@ from absl.flags import FLAGS
 from Utils.common_functions import make_and_clean_dir
 
 
-flags.DEFINE_string('data_dir', "../data/PolypImages",
+flags.DEFINE_string('data_dir', "../data/PolypImages_aug",
                     'path to Polyps data set for training, validation and test')
 flags.DEFINE_string('output_dir_prefix', '../data/PolypImages', 'prefix of the path for output directories')
-flags.DEFINE_string('fraction', '694:0:70', 'fraction as train:valid:test')
+flags.DEFINE_string('fraction', '9:0:1', 'fraction as train:valid:test')
 
 
 def split_data_set(data_dir, fraction, output_json=None): # fraction as train:valid:test
