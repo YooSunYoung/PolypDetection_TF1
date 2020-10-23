@@ -10,14 +10,27 @@ class SocketCommunicator:
         self.server = kwargs.get('server', True)
         if not self.server:
             self.server_port = kwargs.get('server_port', 6006)
+        self.socket = None
         self.connection = None
 
     def build_server_connection(self):
-        address = (self.ip_address, self.port)
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(address)
-        s.listen(5)
-        conn, addr = s.accept()
+        while True:
+            try:
+                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                address = (self.ip_address, self.port)
+                self.socket.bind(address)
+                self.socket.listen(5)
+            except OSError as e:
+                if e.args[0] == 98:
+                    print("Port number {} is not available.".format(self.port))
+                    self.port -= 1
+                    print("Retrying with port number {}.".format(self.port))
+                else:
+                    self.connection = None
+                    break
+            else:
+                break
+        conn, addr = self.socket.accept()
         if self.debug_mode:
             print('[+] Connected with ', addr)
         self.connection = conn
@@ -50,6 +63,8 @@ class SocketCommunicator:
 
     def close_connection(self):
         self.connection.close()
+        if self.server:
+            self.socket.close()
 
     def receive_string(self, len_string):
         data = self.connection.recv(len_string)
@@ -66,7 +81,8 @@ class SocketCommunicator:
         len_received_data = 0
         received_data = []
         while len_received_data < len_array:
-            data = self.connection.recv(len_array)
+            left_bits = len_array - len_received_data
+            data = self.connection.recv(left_bits)
             received_data.extend(data)
             len_received_data = len_received_data + data.__len__()
             if self.debug_mode:
