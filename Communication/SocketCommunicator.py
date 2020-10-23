@@ -9,6 +9,7 @@ class SocketCommunicator:
         self.port = kwargs.get('port', 6006)
         self.server = kwargs.get('server', True)
         if not self.server:
+            self.server_ip = kwargs.get('server_ip', 'localhost')
             self.server_port = kwargs.get('server_port', 6006)
         self.socket = None
         self.connection = None
@@ -42,7 +43,7 @@ class SocketCommunicator:
                 self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 address = (self.ip_address, self.port)
                 self.connection.bind(address)
-                self.connection.connect(('localhost', self.server_port))
+                self.connection.connect((self.server_ip, self.server_port))
             except OSError as e:
                 if e.args[0] == 10048:
                     print("Port number {} is not available.".format(self.port))
