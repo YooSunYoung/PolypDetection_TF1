@@ -41,5 +41,9 @@ print("Processing done with {} images".format(len(predictions)))
 print("single average time: %.5f" % single_time_consumption)
 print("total nn time: %.5f" % total_nn_time_consumption)
 print("total time: %.5f" % total_time_consumption)
-receiver.close_connection()
 
+print(predictions)
+for prediction in predictions:
+    receiver.send_array(prediction)
+
+receiver.close_connection()
