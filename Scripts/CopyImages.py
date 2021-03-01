@@ -1,9 +1,10 @@
 import os
 import shutil
 
-number_images = [1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100, 200, 300, 400, 500, 1000]
+#number_images = [1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100, 200, 300, 400, 500, 1000]
+number_images = [2000, 3000, 4000]
 root_dir = "../data/TimeConsumption/"
-original_image = "../data/PolypImages/001.jpg"
+original_image = "../data/SinglePolypImage/028.jpg"
 for num in number_images:
     target_directory = os.path.join(root_dir, str(num))
     try:

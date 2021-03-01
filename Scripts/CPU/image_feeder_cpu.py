@@ -8,4 +8,6 @@ if __name__ == "__main__":
     image_feeder.build_connection()
     image_feeder.send_images()
     image_feeder.receive_results()
+    for key in image_feeder.sent_images.keys():
+        print(image_feeder.sent_images[key])
     image_feeder.close_connection()
