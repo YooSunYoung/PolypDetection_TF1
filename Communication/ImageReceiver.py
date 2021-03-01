@@ -37,7 +37,7 @@ class ImageReceiver(SocketCommunicator):
 
 
 def dummy_analysis(data):
-    return [0,0,0,0,0]
+    return [0, 0, 0, 0, 0]
 
 
 if __name__ == "__main__":

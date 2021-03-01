@@ -53,7 +53,6 @@ class ImageFeeder(SocketCommunicator):
     def receive_results(self):
         for key in self.sent_images.keys():
             self.sent_images[key] = self.receive_array(5)
-        print(self.sent_images)
         return self.sent_images
 
 
