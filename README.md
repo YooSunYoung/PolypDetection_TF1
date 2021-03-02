@@ -133,8 +133,10 @@ python dataset.py
 
 ```bash
 python Training/train.py \
-                        --dataset ./data/PolypImages_aug \
-                        --val_dataset ./data/PolypImages_valid \
+                        --train_image ./data/train_image.npy \
+                        --train_label ./data/train_label.npy \
+                        --valid_image ./data/valid_image.npy \
+                        --valid_label ./data/valid_label.npy \
                         --classes ./data/polyp.names \
                         --checkpoint_dir_path ./results/checkpoints \
                         --log_dir_path ./results/log \
@@ -145,7 +147,7 @@ python Training/train.py \
 ```
 
 Default settings are in the `Training/training_recipy.py`
-You can change the default setting by editting `Training/training_recipy.py`
+You can change the default setting by editing `Training/training_recipy.py`
 
 ### Evaluation
 
