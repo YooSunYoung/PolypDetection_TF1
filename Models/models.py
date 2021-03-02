@@ -196,7 +196,7 @@ class PolypDetectionModel:
 
 if __name__ == "__main__":
     model = PolypDetectionModel(training=True)
-    X = tf.placeholder(tf.float32, [None, 227, 227, 3], name="input_layer")
+    X = tf.placeholder(tf.float32, [None, 227, 227, 3], name="input")
     output = model.get_model(X)
     import numpy as np
     num_trainable_variable = np.sum([np.prod(v.get_shape().as_list()) for v in tf.trainable_variables()])
