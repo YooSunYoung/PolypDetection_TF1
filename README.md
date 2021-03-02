@@ -125,31 +125,41 @@ python dataset.py
 - `Models/config.py` contains the information as a dictionary variable `configuration`.
   If you change the content in the `configuration` and it would affect all other processes.
   You may also put the information as arguments to the specific methods.
-- `Models/dataset.py` contains the `PolypDataset` class and its static methods.
+- `Models/dataset.py` contains the `Dataset` class and its static methods.
 - `Models/models.py` contains the `PolypDetectionModel` class.
   For now, the only model is modified from squeezenet and loss function is from Yolo V1.
 
 ### Training
 
+`Training/train.py` perform training the `PolypDetectionModel` model with .npy binary files we made in data preprocessing.
+With `validate` option `True`, it saves the model where validation loss is the lowest.
+You can set `save_point` and `validation_point` where you save model every `(save/validatoin)_point` epochs.
+Other options are self-describing.
+The command below shows all options you can set for training.
 ```bash
 python Training/train.py \
                         --train_image ./data/train_image.npy \
                         --train_label ./data/train_label.npy \
+                        --validate True \
                         --valid_image ./data/valid_image.npy \
                         --valid_label ./data/valid_label.npy \
                         --classes ./data/polyp.names \
                         --checkpoint_dir_path ./results/checkpoints \
                         --log_dir_path ./results/log \
-                        --epochs 500 \
-                        --save_points 100 \
-                        --batch_size 2 \
-                        --learning_rate 1e-3 
+                        --epochs 200 \
+                        --save_point 50 \
+                        --validation_point 10 \
+                        --batch_size 32 \
+                        --val_batch_size 32 \
+                        --learning_rate 1e-3
 ```
 
-Default settings are in the `Training/training_recipy.py`
-You can change the default setting by editing `Training/training_recipy.py`
+Default settings are in the `Training/training_recipy.py`.
+You can change the default setting by editing `Training/training_recipy.py`.
+Then you can simply run the training by `python Training/train.py`.
 
 ### Evaluation
+Evaluation is done with `train_image.npy` and `train_label.npy`.
 
 ### Postprocessing (Weight and Model files) 
 

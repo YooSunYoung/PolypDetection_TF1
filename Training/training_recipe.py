@@ -10,7 +10,7 @@ def set_settings(flags):
 #   flags.DEFINE_string('device', '/GPU:0', 'name of the device for training')
     flags.DEFINE_integer('epochs', 200, 'number of epochs')
     flags.DEFINE_integer('save_point', 50, 'save weights every')
-    flags.DEFINE_integer('validation_point', 40, 'validate every')
+    flags.DEFINE_integer('validation_point', 10, 'validate every')
     flags.DEFINE_integer('batch_size', 32, 'batch size')
     flags.DEFINE_integer('val_batch_size', 4, 'validation batch size')
     flags.DEFINE_float('learning_rate', 1e-3, 'learning rate')
