@@ -14,13 +14,19 @@ VitisAIForPolyp
 After running data pre-processing and training, more directories will be added like below.
 ```
     ├───data
-    │     ├───PolypImages
-    │     ├───PolypImages_train
-    │     ├───PolypImages_aug
-    │     └───PolypImages_valid
-    └───results
-          ├───checkpoints
-          └───logs
+    │     ├─── PolypImages
+    │     ├─── PolypImages_train
+    │     ├─── PolypImages_aug
+    │     ├─── PolypImages_valid
+    │     ├─── train_image.npy
+    │     ├─── train_label.npy
+    │     ├─── valid_image.npy
+    │     ├─── valid_label.npy
+    │     ├─── test_image.npy
+    │     ├─── test_label.npy
+    └─── results
+          ├─── checkpoints
+          └─── logs
 ```
 ### Environment Setting
 `EnvironmentSettings/` consists of the `.yml` files for conda environments.
@@ -103,6 +109,16 @@ first, you need to install `imgaug` module with conda.
 conda config --add channels conda-forge
 conda install imgaug
 ```
+
+#### 3. Save Images and Labels as Numpy Binary Files
+When you finished splitting dataset into `train`, `valid`, and `test`, 
+you should save the images and labels in binary files 
+so that we can call them fast for training or evaluation.
+`dataset.py` load images and labels from each directory of dataset and save them as `.npy` binary files.
+* You have to change the settings in the script in order to use different directory path or name of binary files.
+```bash
+python dataset.py
+```  
 
 ### Models
 <!-- description for the models needed-->

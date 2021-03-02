@@ -27,10 +27,11 @@ def transform_targets(y_true):
     return label
 
 
-class PolypDataset:
-    def __init__(self, data_path="../data/", valid_data_path="../data/"):
+class DataSet:
+    def __init__(self, data_path="../data/", valid_data_path="../data/", test_data_path="../data/"):
         self.data_path = data_path
         self.valid_data_path = valid_data_path
+        self.test_data_path = test_data_path
 
     def load_data(self, data_path=None):
         if data_path is None: data_path = self.data_path
@@ -97,3 +98,37 @@ class PolypDataset:
                 logging.log(logging.INFO, "Validation dataset from directory {}".format(data_path))
         return self.load_data(data_path)
 
+    def load_test_data(self, data_path=None):
+        if data_path is None:
+            data_path = self.test_data_path
+            logging.log(logging.INFO, "Validation dataset from directory {}".format(data_path))
+        else:
+            if data_path is not self.test_data_path:
+                self.test_data_path = data_path
+                logging.log(logging.INFO, "Validation dataset from directory {}".format(data_path))
+        return self.load_data(data_path)
+
+
+if __name__ == "__main__":
+    dataset = DataSet(data_path='../data/PolypImages_train/',
+                      valid_data_path='../data/PolypImages_valid/',
+                      test_data_path='../data/PolypImages_test/')
+
+    training_image, training_label = dataset.load_train_data()
+    valid_image, valid_label = dataset.load_valid_data()
+    test_image, test_label = dataset.load_test_data()
+
+    with open('../data/train_image.npy', 'wb') as f:
+        np.save(f, np.array(training_image))
+    with open('../data/train_label.npy', 'wb') as f:
+        np.save(f, np.array(training_label))
+
+    with open('../data/valid_image.npy', 'wb') as f:
+        np.save(f, np.array(valid_image))
+    with open('../data/valid_label.npy', 'wb') as f:
+        np.save(f, np.array(valid_label))
+
+    with open('../data/test_image.npy', 'wb') as f:
+        np.save(f, np.array(test_image))
+    with open('../data/test_label.npy', 'wb') as f:
+        np.save(f, np.array(test_label))
