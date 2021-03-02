@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow_core.python.eager.wrap_function import VariableHolder
 import tensorflow.keras.backend as K
 
+
 def Conv2D(name, x, out_channel=3, kernel_shape=3, stride=1, padding="SAME"):
     in_shape = x.get_shape().as_list()
     in_channel = in_shape[3]
@@ -12,15 +13,11 @@ def Conv2D(name, x, out_channel=3, kernel_shape=3, stride=1, padding="SAME"):
                                                             uniform=False,
                                                             seed=None,
                                                             dtype=tf.float32)
-    #b_init = tf.constant_initializer()
     W = tf.get_variable('W'+name, filter_shape, initializer=W_init)
-    #b = tf.get_variable('b'+name, [out_channel], initializer=b_init)
     conv = tf.nn.conv2d(x, W, stride, padding, name=name)
     activation = tf.identity
-    #ret = activation(tf.nn.bias_add(conv, b, data_format="NHWC"), name=name)
     ret = activation(conv, name=name)
     ret.variables = VariableHolder(W)
-    #ret.variables.b = b
     return ret
 
 
@@ -46,9 +43,9 @@ def monitor(x, name):
 
 def GenerateGrid(grid_size):
     grid = tf.meshgrid(tf.range(grid_size), tf.range(grid_size))
-    grid = tf.expand_dims(tf.stack(grid, axis=-1), axis=2)# the grid shape becomes (gridSize,gridSize,1,2)
-    grid = tf.tile(grid,tf.constant([1,1,3,1], tf.int32) )#the grid shape becomes (gridSize,gridSize,3,2)
-    grid=tf.cast(grid,tf.float32)
+    grid = tf.expand_dims(tf.stack(grid, axis=-1), axis=2)  # the grid shape becomes (gridSize,gridSize,1,2)
+    grid = tf.tile(grid, tf.constant([1, 1, 3, 1], tf.int32) )  # the grid shape becomes (gridSize,gridSize,3,2)
+    grid = tf.cast(grid, tf.float32)
     return grid
 
 
@@ -101,12 +98,10 @@ class PolypDetectionModel:
         return box_x1y1x2y2_withLUAs0_scale01, objectness_net_out
 
     def reshape_output_for_prediction(self, outputs):
-        b, c = [], []
         o = outputs
         num_tot_boxes = self.n_grid*self.n_grid*self.n_boxes
         bbox = tf.reshape(o[0], (1, num_tot_boxes, 1, 4))
         confidence = tf.reshape(o[1], (1, num_tot_boxes, 1))
-        scores = confidence
         boxes, scores, classes, valid_detections = tf.image.combined_non_max_suppression(
             boxes=bbox,
             scores=confidence,
@@ -117,8 +112,8 @@ class PolypDetectionModel:
         )
         return boxes, scores, classes, valid_detections
 
-    def get_model(self, X, training=True):
-        l = self.first_layer(X)
+    def get_model(self, input_layer, training=True, monitoring=False):
+        l = self.first_layer(input_layer)
         l = tf.nn.relu(l)
         l = MaxPooling('pool1', l, shape=3, stride=2, padding='SAME')
         l = halffire('hafflire1', l)
@@ -132,22 +127,11 @@ class PolypDetectionModel:
         l = halffire('hafflire5', l)
         l = MaxPooling('pool5', l, shape=3, stride=2, padding='SAME')
         l = halffire('hafflire6', l)
-#        l = MaxPooling('pool7', l, shape=3, stride=2, padding='SAME')
         l = halffire('hafflire7', l)
-#        l = MaxPooling('pool8', l, shape=3, stride=2, padding='SAME')
-#        l = halffire('hafflire8', l)
-#        l = MaxPooling('pool9', l, shape=3, stride=2, padding='SAME')
-#        l = halffire('hafflire9', l)
-#        l = MaxPooling('pool10', l, shape=3, stride=2, padding='SAME')
-#        l = halffire('hafflire10', l)
-#        l = MaxPooling('pool11', l, shape=3, stride=2, padding='SAME')
-#        l = halffire('hafflire11', l)
-#        l = MaxPooling('pool12', l, shape=3, stride=2, padding='SAME')
-#        l = halffire('hafflire12', l)
-#        l = halffire('hafflire13', l)
         output_0 = Conv2D('output', l, out_channel=3 * 5, kernel_shape=1, stride=1, padding='SAME')
         output_0 = tf.reshape(output_0, shape=(-1, 4, 4, 3, 5), name="FinalOutput")
-        #output_0 = monitor(output_0, "output0")
+        if monitoring:
+            output_0 = monitor(output_0, "output0")
         if training is False:
             output_0 = self.reshape_output(output_0)
             output_0 = self.reshape_output_for_prediction(output_0)
@@ -155,7 +139,9 @@ class PolypDetectionModel:
 
         return output_0
 
-    def get_loss(self, y_true=None, y_pred=None, train_state=True, grid_size=4, n_boxes=3):
+    def get_loss(self, y_true=None, y_pred=None, train_state=True, grid_size=4, n_boxes=3,
+                 point_loss_factor=10, size_loss_factor=13, loc_loss_factor=1,
+                 obj_loss_factor=2, non_obj_loss_factor=0.5):
         grid = GenerateGrid(grid_size=4)
         pred_obj_conf = y_pred[:, :, :, :, 0]
         pred_box_offset_coord = y_pred[:, :, :, :, 1:]
@@ -197,19 +183,20 @@ class PolypDetectionModel:
         size_loss = tf.reduce_mean(
             tf.reduce_sum(tf.square(predictor_mask_none * (target_box_offset_coord[:,:,:,:, 3:] - pred_box_offset_coord[:,:,:,:, 3:]))))
 
-        loc_loss = 10 * point_loss + 13 * size_loss
-        loss = loc_loss + 2 * obj_loss + 0.5 * noobj_loss
+        loc_loss = point_loss_factor * point_loss + size_loss_factor * size_loss
+        loss = loc_loss_factor * loc_loss + obj_loss_factor * obj_loss + non_obj_loss_factor * noobj_loss
 
         if train_state is True:
             tf.summary.scalar("loc_loss", K.sum(10 * loc_loss))
             tf.summary.scalar("obj_loss", K.sum(2 * obj_loss))
             tf.summary.scalar("nonObj_loss", K.sum(0.5 * noobj_loss))
-            # print("loss is:{}".format(loss))
+            tf.summary.scalar("total_loss", K.sum(loss))
         return loss
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     model = PolypDetectionModel(training=True)
-    X = tf.placeholder(tf.float32, [None, 227, 227, 3], name="imGRBNormalize")
+    X = tf.placeholder(tf.float32, [None, 227, 227, 3], name="input_layer")
     output = model.get_model(X)
     import numpy as np
     num_trainable_variable = np.sum([np.prod(v.get_shape().as_list()) for v in tf.trainable_variables()])
