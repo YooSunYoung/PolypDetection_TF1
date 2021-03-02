@@ -10,23 +10,26 @@ configuration = {
 
 
 class GlobalVar:
-    numConv = 0
-    saveConvInputOutput = False
-    scoreThreshold=0.0
+    num_conv = 0
+    save_conv_input_output = False
+    score_threshold = 0.0
 
 
-def get_numConv():
-    return GlobalVar.numConv
+def get_num_conv():
+    return GlobalVar.num_conv
 
 
-def set_numConv(num):
-    GlobalVar.numConv = num
+def set_num_conv(num):
+    GlobalVar.num_conv = num
 
-def get_saveConvInputOutput():
-    return GlobalVar.saveConvInputOutput
+
+def get_save_conv_input_output():
+    return GlobalVar.save_conv_input_output
+
 
 def get_score_threshold():
-    return GlobalVar.scoreThreshold
+    return GlobalVar.score_threshold
 
-def set_scoreThreshold(num):
-    GlobalVar.scoreThreshold=num
+
+def set_score_threshold(num):
+    GlobalVar.score_threshold = num
