@@ -6,7 +6,7 @@ from Models.models import PolypDetectionModel
 import numpy as np
 from Training import training_recipe
 
-#os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+
 class Trainer:
     def __init__(self, **kwargs):
         self.train_image_path = kwargs.get("train_image")
@@ -71,8 +71,8 @@ class Trainer:
                                     val_offset = (b_num * val_batch_size) % (val_size - 1) if val_size > 1 else 0
                                     val_batch_x = val_images[val_offset:(val_offset + val_batch_size)]
                                     val_batch_y = val_labels[val_offset:(val_offset + val_batch_size)]
-                                    _, cur_val_loss, val_summary = sess.run([train_op, loss, summary_op],
-                                                                            feed_dict={X: val_batch_x, Y: val_batch_y})
+                                    cur_val_loss, val_summary = sess.run([loss, summary_op],
+                                                                         feed_dict={X: val_batch_x, Y: val_batch_y})
                                 if cur_val_loss < lowest_loss:
                                     saver.save(sess, os.path.join(FLAGS.checkpoint_dir_path, "model"))
                         else:
