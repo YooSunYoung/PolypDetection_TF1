@@ -78,6 +78,10 @@ It would be easier to put all the data in one directory. For example,
                     .
 ```
 
+We also had a video from a capsule endoscopy which doesn't have any polyp in it.
+So we extracted images from the video so that we can use them for evaluation of the model we trained.
+`Utils/extract_images_from_video.py` is the script for extracting random images from a video. 
+
 ### Data Pre-processing
 #### 1. Split data into Train/Valid/Test set
 Here is how to use `Utils/split_dataset.py` to split dataset randomly into `training`, `validation` and `test` sets.

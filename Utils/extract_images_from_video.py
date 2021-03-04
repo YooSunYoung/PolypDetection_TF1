@@ -3,7 +3,7 @@ from absl.flags import FLAGS
 import random
 import cv2
 import os
-flags.DEFINE_string("video_path", "../data/WithoutPolypVideo/OUH_10050448_08_06_15_1.mpg", "path to the video file")
+flags.DEFINE_string("video_path", "../data/sample.mpg", "path to the video file")
 flags.DEFINE_string("output_dir", "../data/NoPolypImages/", "directory for output images")
 flags.DEFINE_integer("output_image_num", 300, "number of output images you want to sample from the video")
 
@@ -25,10 +25,14 @@ def extract_image(video_path, output_image_num, output_dir):
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    for idx_frame in range(video_frame_len):
+    if output_image_num > video_frame_len: output_image_num = video_frame_len
+    picked_frames = random.sample(range(video_frame_len), output_image_num)
+
+    for i, idx_frame in enumerate(picked_frames):
+        video.set(1, idx_frame)
         ret, frame = video.read()
         if ret is True:
-            cv2.imwrite(os.path.join(output_dir, "no_polyp_{}.jpg".format(idx_frame)), frame)
+            cv2.imwrite(os.path.join(output_dir, "no_polyp_{}.jpg".format(i)), frame)
 
     video.release()
     cv2.destroyAllWindows()
