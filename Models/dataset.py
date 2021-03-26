@@ -33,13 +33,12 @@ class DataSet:
         self.valid_data_path = valid_data_path
         self.test_data_path = test_data_path
 
-    def load_data(self, data_path=None):
+    def load_data(self, data_path=None, training=True):
         if data_path is None: data_path = self.data_path
         logging.log(logging.INFO, "Scraping dataset from {}".format(data_path))
         images = []
         norm_images, labels = [], []
         files = os.listdir(data_path)
-        inputs_target = []
         for file in files:
             if '.jpg' in file:
                 images.append([os.path.join(data_path, file), 1])
@@ -71,11 +70,14 @@ class DataSet:
                         bndbox[1] = int(box.find('ymin').text.split('.')[0])
                         bndbox[2] = int(box.find('xmax').text.split('.')[0])
                         bndbox[3] = int(box.find('ymax').text.split('.')[0])
-                        bndbox_normalized = bndbox / 227
-            y_true = transform_targets(bndbox_normalized)
-            inputs_target.append([im_rgb_normalized, y_true])
             norm_images.append(im_rgb_normalized)
-            labels.append(y_true)
+            if training:
+                bndbox_normalized = bndbox / 227
+                y_true = transform_targets(bndbox_normalized)
+                labels.append(y_true)
+            else:
+                labels.append(bndbox)
+
         return np.array(norm_images), np.array(labels)
 
     def load_train_data(self, data_path=None):
@@ -106,7 +108,7 @@ class DataSet:
             if data_path is not self.test_data_path:
                 self.test_data_path = data_path
                 logging.log(logging.INFO, "Validation dataset from directory {}".format(data_path))
-        return self.load_data(data_path)
+        return self.load_data(data_path, training=False)
 
 
 if __name__ == "__main__":
