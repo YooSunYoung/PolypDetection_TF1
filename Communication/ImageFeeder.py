@@ -58,9 +58,11 @@ class ImageFeeder(SocketCommunicator):
 
 if __name__ == "__main__":
     image_feeder = ImageFeeder(port=6007,
-                               server_port=6003,
+                               server_port=6005,
                                debug_mode=False,
-                               directory="../data/TimeConsumption/1000/")
+                               server_ip='192.168.8.125',
+                               ip_address='192.168.8.124',
+                               directory="../data/TimeConsumption/1/")
     image_feeder.build_connection()
     image_feeder.send_images()
     image_feeder.receive_results()
