@@ -163,7 +163,25 @@ You can change the default setting by editing `Training/training_recipy.py`.
 Then you can simply run the training by `python Training/train.py`.
 
 ### Evaluation
-Evaluation is done with `train_image.npy` and `train_label.npy`.
+Evaluation is done with `test_image.npy` and `test_label.npy`.
 
-### Postprocessing (Weight and Model files) 
+### Postprocessing (Weight and Model files)
+After training the model, we are going to implement it in FPGAs.
+With 
+#### Convert Checkpoints to Protobuf (.pb)
+`Utils/convert.py` converts the checkpoint files into protobuf file.
+It assumes the checkpoint files are saved as `results/model.(index|meta|.data-00000-of-00001)`.
+It will give you `results/model.pb` and `results/model.txt` as a result.
+#### Vitis AI
+You can use vitis-ai for implementing AI into FPGAs.
+You will need to have `docker` installed, and docker image `xilinx/vitis-ai:latest`.
+```
+docker pull xilinx/vitis-ai
+```
+##### Weight Files Quantization
 
+
+### References
+- [Vitis AI Tutorials](https://github.com/Xilinx/Vitis-AI)
+- [Squeeze Net](https://github.com/vonclites/squeezenet)
+- [Yolo V1](https://arxiv.org/abs/1506.02640)
