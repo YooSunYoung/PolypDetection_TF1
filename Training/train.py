@@ -1,9 +1,9 @@
 from absl import app, flags
 from absl.flags import FLAGS
 import tensorflow as tf
+import numpy as np
 import os
 from Models.models import PolypDetectionModel
-import numpy as np
 from Training import training_recipe
 
 
@@ -31,8 +31,8 @@ class Trainer:
 
     def train(self):
         train_size = len(self.train_dataset[0])
-        self.batch_size = train_size if train_size > self.batch_size else self.batch_size
-        self.val_batch_size = train_size if train_size > self.val_batch_size else self.val_batch_size
+        self.batch_size = train_size if train_size < self.batch_size else self.batch_size
+        self.val_batch_size = train_size if train_size < self.val_batch_size else self.val_batch_size
         batch_x, batch_y = None, None
         cur_loss, cur_val_loss = None, None
         lowest_loss = float('inf')
@@ -47,6 +47,9 @@ class Trainer:
                 summary_op = tf.summary.merge_all()
                 images = self.train_dataset[0]
                 labels = self.train_dataset[1]
+                val_size = len(self.val_dataset)
+                val_images = self.val_dataset[0]
+                val_labels = self.val_dataset[1]
                 init = tf.global_variables_initializer()
                 saver = tf.train.Saver()
                 with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
@@ -54,6 +57,10 @@ class Trainer:
                     sess.run(init)
                     cur_loss = 0
                     for i in range(1, self.epoch + 1):
+                        # if lowest_loss < 20 and self.learning_rate > 1e-4:
+                        #     self.learning_rate = 1e-4
+                        #     train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(loss,
+                        #                                                                    global_step=global_step)
                         batch_epoch_size = int(len(images) / self.batch_size)
                         for b_num in range(batch_epoch_size):
                             offset = b_num * self.batch_size
@@ -67,9 +74,6 @@ class Trainer:
                         print("training loss : ", i, cur_loss)
                         if self.validate:
                             if i % self.validation_point == 0:
-                                val_size = len(self.val_dataset)
-                                val_images = self.val_dataset[0]
-                                val_labels = self.val_dataset[1]
                                 for b_num in range(int(len(val_images) / self.val_batch_size)):
                                     val_offset = (b_num * self.val_batch_size) % (val_size - 1) if val_size > 1 else 0
                                     val_batch_x = val_images[val_offset:(val_offset + self.val_batch_size)]
@@ -77,6 +81,7 @@ class Trainer:
                                     cur_val_loss, val_summary = sess.run([loss, summary_op],
                                                                          feed_dict={X: val_batch_x, Y: val_batch_y})
                                 if cur_val_loss < lowest_loss:
+                                    lowest_loss = cur_val_loss
                                     print("current lowest validation loss : ", i, cur_val_loss)
                                     saver.save(sess, os.path.join(self.checkpoint_dir_path, "model"))
                         else:
