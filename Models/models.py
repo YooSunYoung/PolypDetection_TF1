@@ -125,9 +125,11 @@ class PolypDetectionModel:
         l = halffire('hafflire4', l)
         l = MaxPooling('pool5', l, shape=3, stride=2, padding='SAME')
         l = halffire('hafflire5', l)
-        l = MaxPooling('pool5', l, shape=3, stride=2, padding='SAME')
+        l = MaxPooling('pool6', l, shape=3, stride=2, padding='SAME')
         l = halffire('hafflire6', l)
         l = halffire('hafflire7', l)
+        #l = halffire('hafflire8', l)
+        #l = halffire('hafflire9', l)
         output_0 = Conv2D('output', l, out_channel=3 * 5, kernel_shape=1, stride=1, padding='SAME')
         output_0 = tf.reshape(output_0, shape=(-1, 4, 4, 3, 5), name="FinalOutput")
         if monitoring:
@@ -140,7 +142,7 @@ class PolypDetectionModel:
         return output_0
 
     def get_loss(self, y_true=None, y_pred=None, train_state=True, grid_size=4, n_boxes=3,
-                 point_loss_factor=10, size_loss_factor=13, loc_loss_factor=1,
+                 point_loss_factor=10, size_loss_factor=13, loc_loss_factor=1.5,
                  obj_loss_factor=2, non_obj_loss_factor=0.5):
         grid = GenerateGrid(grid_size=4)
         pred_obj_conf = y_pred[:, :, :, :, 0]
