@@ -19,7 +19,7 @@ for iimgs, imgs in enumerate(images):
     imRGB = imRGB/255.0
     imRGB = np.array([imRGB])
     images[iimgs] = imRGB
-checkpoint_path = "../../results/48_48_6_checkpoints/model-700"
+checkpoint_path = "../../results/old_results/48_48_6_checkpoints/model-700"
 model = PolypDetectionModel()
 predictions = []
 single_time_consumption = 0.0

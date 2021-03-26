@@ -8,7 +8,7 @@ receiver = ImageReceiver(debug_mode=False, port=6004)
 receiver.build_connection()
 images = receiver.receive_images()
 images = [np.array(image).reshape((1,227,227,3)) for image in images]
-checkpoint_path = "../results/48_48_6_checkpoints/model-700"
+checkpoint_path = "../results/old_results/48_48_6_checkpoints/model-700"
 model = PolypDetectionModel()
 predictions = []
 single_time_consumption = 0.0
