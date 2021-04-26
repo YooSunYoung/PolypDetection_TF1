@@ -4,6 +4,8 @@ import tensorflow as tf
 import time
 import numpy as np
 import sys
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 def process_output(result):
     grid_size_width = 4
